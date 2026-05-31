@@ -5,11 +5,18 @@ import RoleSelectPage from './pages/RoleSelectPage.jsx';
 import SimulationPage from './pages/SimulationPage.jsx';
 import ReportPage from './pages/ReportPage.jsx';
 import { useSimStore } from './store/useSimStore.js';
+import LearnwithFun from './pages/LearnwithFun.jsx';
 
 function ProtectedSim() {
   const role = useSimStore(s => s.role);
   if (!role) return <Navigate to="/select" replace />;
   return <SimulationPage />;
+}
+
+function ProtectedLearnwithfun() {
+  const role = useSimStore(s => s.role);
+  if (!role) return <Navigate to="/select" replace />;
+  return <LearnwithFun/>;
 }
 
 function ProtectedReport() {
@@ -32,6 +39,7 @@ export default function App() {
         <Route path="/select" element={<RoleSelectPage />} />
         <Route path="/sim"    element={<ProtectedSim />} />
         <Route path="/report" element={<ProtectedReport />} />
+        <Route path="/learn" element={<ProtectedLearnwithfun />} />
         <Route path="*"       element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -135,6 +135,10 @@ export default function SimulationPage() {
     triggerEmergency();
   };
 
+  const handlelearnwithfun = () => {
+   navigate('/learn');
+  };
+
   const handleTaskSubmit = ({ role, taskId, content }) => {
     const { toggleTask, addMessage } = useSimStore.getState();
     toggleTask(taskId);
@@ -173,6 +177,7 @@ export default function SimulationPage() {
         timerSeconds={timerSeconds}
         onEndSession={() => setShowEndConfirm(true)}
         onEmergency={handleEmergency}
+          onLearnwithfun={handlelearnwithfun}
         showEmergencyBtn={showEmergencyBtn}
         role={role}
       />

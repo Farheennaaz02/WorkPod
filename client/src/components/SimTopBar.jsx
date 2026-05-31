@@ -31,6 +31,7 @@ export default function SimTopBar({
   timerSeconds,
   onEndSession,
   onEmergency,
+  onLearnwithfun,
   showEmergencyBtn,
   role,
 }) {
@@ -114,6 +115,14 @@ export default function SimTopBar({
               Emergency
             </button>
           )}
+                    <button
+            id="end-session-btn"
+            className="btn btn-ghost btn-sm"
+            onClick={onLearnwithfun}
+            style={{ fontSize: '0.78rem' }}
+          >
+            Learn with Fun
+          </button>
 
           {/* Meet button */}
           <button
