@@ -7,7 +7,7 @@ import { getDbRole } from '../lib/roleMapping.js';
 // Fallback DB for offline/unauthenticated access
 const DB = {
   dev: {
-    title: "Software Developer", icon: "💻", color: "#6c63ff",
+    title: "Software Developer", icon: "", color: "#6c63ff",
     flashcards: [
       { q: "What defines Microservices Architecture?", a: "An architectural style structuring an application as autonomous, loosely coupled services — each deployable independently." },
       { q: "REST vs GraphQL — core difference?", a: "REST uses fixed endpoint schemas. GraphQL lets clients request exactly the data they need in a single query." },
@@ -32,7 +32,7 @@ const DB = {
     ]
   },
   hr: {
-    title: "HR Manager", icon: "👥", color: "#10b981",
+    title: "HR Manager", icon: "", color: "#10b981",
     flashcards: [
       { q: "What is Onboarding Velocity?", a: "How quickly a new employee reaches full productivity — tracked as a key HR efficiency metric." },
       { q: "Define EEOC compliance.", a: "Equal Employment Opportunity Commission rules protecting job applicants from discrimination in hiring." }
@@ -52,7 +52,7 @@ const DB = {
     ]
   },
   pm: {
-    title: "Product Manager", icon: "📦", color: "#f59e0b",
+    title: "Product Manager", icon: "", color: "#f59e0b",
     flashcards: [
       { q: "What is Product-Market Fit?", a: "When your product satisfies a verified market demand at scale — the sweet spot every startup hunts for." },
       { q: "Define MVP.", a: "Minimum Viable Product — the leanest version built to test core assumptions and capture real market feedback." }
@@ -72,7 +72,7 @@ const DB = {
     ]
   },
   ml_intern: {
-    title: "ML Intern", icon: "🤖", color: "#06b6d4",
+    title: "ML Intern", icon: "", color: "#06b6d4",
     flashcards: [
       { q: "What is Overfitting?", a: "When a model learns the training data too well — including noise — and fails to generalise to unseen data. Fix with regularisation, dropout, or more data." },
       { q: "Explain the Bias-Variance Tradeoff.", a: "High bias = underfitting (model too simple). High variance = overfitting (model too complex). The goal is to find the sweet spot that minimises total error." },
@@ -109,7 +109,7 @@ const DB = {
     ]
   },
   sd_intern: {
-    title: "SD Intern", icon: "🛠️", color: "#f472b6",
+    title: "SD Intern", icon: "", color: "#f472b6",
     flashcards: [
       { q: "What is the difference between a stack and a queue?", a: "A stack is LIFO (Last In First Out). A queue is FIFO (First In First Out). Both are fundamental data structures with different use cases." },
       { q: "What is Big-O notation?", a: "A mathematical notation describing the worst-case time or space complexity of an algorithm as input size grows. O(1) is constant, O(n) is linear, O(n²) is quadratic." },
@@ -185,7 +185,7 @@ function pill(type, children) {
     red: { background: "rgba(244,63,94,0.1)", color: "#f43f5e", border: "1px solid rgba(244,63,94,0.25)" },
   };
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 20, fontSize: "0.72rem", fontWeight: 600, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.04em", ...palettes[type] }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 18px", borderRadius: 24, fontSize: "0.85rem", fontWeight: 600, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.04em", ...palettes[type] }}>
       {children}
     </span>
   );
@@ -272,8 +272,26 @@ function Onboard({ state, setState, addRewards, save }) {
               style={{ background: "#111520", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: 24, cursor: "pointer", textAlign: "left", transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = d.color + "66"; e.currentTarget.style.transform = "translateY(-5px) scale(1.01)"; e.currentTarget.style.boxShadow = "0 20px 50px " + d.color + "22"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
-              <div style={{ fontSize: "2rem", marginBottom: 14 }}>{d.icon}</div>
-              <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em", marginBottom: 6 }}>{d.title}</div>
+              <div
+  style={{
+    fontSize: "1.4rem",
+    marginBottom: 10
+  }}
+>
+  {d.icon}
+</div>
+
+<div
+  style={{
+    fontFamily: "'Syne',sans-serif",
+    fontWeight: 800,
+    fontSize: "1.15rem",
+    letterSpacing: "-0.02em",
+    marginBottom: 6
+  }}
+>
+  {d.title}
+</div>
               <p style={{ color: "#64748b", fontSize: "0.8rem", lineHeight: 1.5, marginBottom: 14 }}>Flashcards, scenarios &amp; quizzes tailored for this role.</p>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 20, fontSize: "0.72rem", fontWeight: 600, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.04em", background: d.color + "18", color: d.color, border: "1px solid " + d.color + "44" }}>Select →</span>
             </div>
@@ -349,7 +367,7 @@ function Dashboard({ state, setState, db = DB }) {
         </div>
       </div>
 
-      <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.02em", marginBottom: 16 }}>🎛 Training Modules</div>
+      <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.02em", marginBottom: 16 }}> Training Modules</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16, marginBottom: 28 }}>
         {modules.map(m => {
           const done = state.cleared.includes(m);
@@ -357,25 +375,68 @@ function Dashboard({ state, setState, db = DB }) {
             <div key={m} style={{ background: "#111520", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: 28, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 20 }}>
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <span style={{ fontSize: "1.8rem" }}>{mIcons[m]}</span>
+                  <span
+  style={{
+    fontSize: "2.0rem",
+    display: "block",
+    marginBottom: "10px"
+  }}
+>
+  {mIcons[m]}
+</span>
                   {done ? pill("green", "✓ Done") : pill("purple", "Pending")}
                 </div>
-                <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em", textTransform: "capitalize", marginBottom: 6 }}>{m}</div>
+                <div
+  style={{
+    fontFamily: "'Syne',sans-serif",
+    fontWeight: 800,
+    fontSize: "1.2rem", // increased
+    letterSpacing: "-0.03em",
+    textTransform: "capitalize",
+    marginBottom: 10
+  }}
+>
+  {m}
+</div>
                 <p style={{ color: "#64748b", fontSize: "0.8rem", lineHeight: 1.5 }}>{mDescs[m]}</p>
               </div>
-              <Btn size="sm" onClick={() => startModule(m)}>Launch →</Btn>
+              <Btn
+  size="sm"
+  onClick={() => startModule(m)}
+  style={{
+    background: m === "flashcards"
+      ? "#60a5fa"
+      : m === "scenarios"
+      ? "#fbbf24"
+      : "#4ade80",
+    color: "#fff",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.08)", // very minimal
+    borderRadius: "12px",
+    
+    fontWeight: "900"
+  }}
+>
+  Start Module →
+</Btn>
             </div>
           );
         })}
       </div>
 
-      <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.02em", marginBottom: 16 }}>🏆 Achievement Badges</div>
+      <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.02em", marginBottom: 16 }}>   Achievement Badges</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12 }}>
         {BADGES.map(b => {
           const u = b.check(state);
           return (
             <div key={b.id} style={{ padding: 20, borderRadius: 16, border: `1px solid ${u ? "rgba(245,158,11,0.3)" : "rgba(255,255,255,0.07)"}`, textAlign: "center", background: u ? "rgba(245,158,11,0.06)" : "rgba(255,255,255,0.02)", opacity: u ? 1 : 0.35, transition: "all 0.3s", boxShadow: u ? "0 0 20px rgba(245,158,11,0.08)" : "none" }}>
-              <div style={{ fontSize: "1.8rem", marginBottom: 8 }}>{b.icon}</div>
+              <div
+  style={{
+    fontSize: "1.3rem",
+    marginBottom: 10
+  }}
+>
+  {b.icon}
+</div>
               <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "0.82rem", marginBottom: 4 }}>{b.title}</div>
               <div style={{ color: "#64748b", fontSize: "0.72rem", lineHeight: 1.4 }}>{b.desc}</div>
             </div>
@@ -738,7 +799,7 @@ export default function LearnWithFun() {
 
       {/* Header */}
       <div style={styles.header}>
-        <div style={styles.logo} onClick={() => state.role && setState(s => ({ ...s, screen: 'dash' }))}>🎓 CareerQuest</div>
+        <div style={styles.logo} onClick={() => state.role && setState(s => ({ ...s, screen: 'dash' }))}>🎓 WorkPod</div>
         {state.screen !== 'onboard' && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             {pill("gold", `🪙 ${state.coins}`)}
