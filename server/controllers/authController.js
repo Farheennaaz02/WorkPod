@@ -9,7 +9,8 @@ function signToken(userId) {
 // POST /api/auth/register
 export const register = async (req, res) => {
   try {
-    const { email, name, password } = req.body;
+    const { name, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
     if (!email || !name || !password) {
       return res.status(400).json({ error: 'email, name and password required' });
     }
@@ -28,11 +29,15 @@ export const register = async (req, res) => {
 // POST /api/auth/login
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
     if (!email || !password) return res.status(400).json({ error: 'email and password required' });
 
     const user = await User.findOne({ email });
-    if (!user || !user.passwordHash) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user.passwordHash) {
+      return res.status(401).json({ error: 'This account does not have password sign-in enabled. Please create a local account with a different email.' });
+    }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
@@ -46,5 +51,11 @@ export const login = async (req, res) => {
 
 // GET /api/auth/me
 export const me = async (req, res) => {
-  res.json({ user: req.user });
+  res.json({
+    user: {
+      id: req.user._id,
+      email: req.user.email,
+      name: req.user.name,
+    },
+  });
 };

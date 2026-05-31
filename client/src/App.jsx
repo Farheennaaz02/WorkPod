@@ -13,12 +13,6 @@ function ProtectedSim() {
   return <SimulationPage />;
 }
 
-function ProtectedLearnwithfun() {
-  const role = useSimStore(s => s.role);
-  if (!role) return <Navigate to="/select" replace />;
-  return <LearnwithFun/>;
-}
-
 function ProtectedReport() {
   const report = useSimStore(s => s.report);
   if (!report) return <Navigate to="/select" replace />;
@@ -39,7 +33,7 @@ export default function App() {
         <Route path="/select" element={<RoleSelectPage />} />
         <Route path="/sim"    element={<ProtectedSim />} />
         <Route path="/report" element={<ProtectedReport />} />
-        <Route path="/learn" element={<ProtectedLearnwithfun />} />
+        <Route path="/learn" element={<LearnwithFun />} />
         <Route path="*"       element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

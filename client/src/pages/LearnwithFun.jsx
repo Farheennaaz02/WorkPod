@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSimStore } from '../store/useSimStore.js';
 import api from '../lib/api.js';
 import { getDbRole } from '../lib/roleMapping.js';
@@ -232,7 +232,7 @@ function useToast() {
 }
 
 // ── Onboarding ───────────────────────────────────────────────────────
-function Onboard({ state, setState, addRewards, save }) {
+function Onboard({ state, setState, addRewards, save, onRoleSelect }) {
   return (
     <div style={{ ...styles.screen, paddingTop: 48, textAlign: "center" }}>
       <div style={{ fontSize: "3rem", marginBottom: 16 }}>🎓</div>
@@ -268,7 +268,7 @@ function Onboard({ state, setState, addRewards, save }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14 }}>
           {['dev','hr','pm'].map(key => { const d = DB[key]; return (
-            <div key={key} onClick={() => { setState(s => ({ ...s, role: key, screen: 'dash' })); save({ role: key }); addRewards(20, 10); }}
+            <div key={key} onClick={() => onRoleSelect(key)}
               style={{ background: "#111520", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: 24, cursor: "pointer", textAlign: "left", transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = d.color + "66"; e.currentTarget.style.transform = "translateY(-5px) scale(1.01)"; e.currentTarget.style.boxShadow = "0 20px 50px " + d.color + "22"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
@@ -305,7 +305,7 @@ function Onboard({ state, setState, addRewards, save }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
           {['ml_intern','sd_intern'].map(key => { const d = DB[key]; return (
-            <div key={key} onClick={() => { setState(s => ({ ...s, role: key, screen: 'dash' })); save({ role: key }); addRewards(20, 10); }}
+            <div key={key} onClick={() => onRoleSelect(key)}
               style={{ background: "#111520", border: "1px solid " + d.color + "33", borderRadius: 20, padding: 24, cursor: "pointer", textAlign: "left", transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)", position: "relative", overflow: "hidden" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = d.color + "77"; e.currentTarget.style.transform = "translateY(-5px) scale(1.01)"; e.currentTarget.style.boxShadow = "0 20px 50px " + d.color + "25"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = d.color + "33"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
@@ -626,13 +626,21 @@ function Quizzes({ state, setState, addRewards, markCleared, toast, db = DB }) {
 // ── Root ─────────────────────────────────────────────────────────────
 export default function LearnWithFun() {
   const navigate = useNavigate();
-  const { role: storeRole, user, token } = useSimStore();
+  const location = useLocation();
+  const { role: storeRole, user, token, setUser } = useSimStore();
+  const shouldStartFresh = new URLSearchParams(location.search).get('reset') === '1';
   const [loading, setLoading] = useState(true);
   const [apiData, setApiData] = useState(null);
   const [error, setError] = useState(null);
+  const [authModal, setAuthModal] = useState(null);
+  const [pendingRole, setPendingRole] = useState(null);
+  const [authForm, setAuthForm] = useState({ email: '', name: '', password: '' });
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
   
   const [state, setState] = useState(() => {
     const defaults = { screen: 'onboard', role: null, username: 'TechNomad', avatar: '🚀', coins: 0, xp: 0, level: 1, cleared: [], fi: 0, flipped: false, si: 0, sfb: null, qi: 0, qsel: null, qlocked: false };
+    if (shouldStartFresh) return defaults;
     try {
       const saved = JSON.parse(localStorage.getItem('cq_v7') || '{}');
       if (saved.role) return { ...defaults, ...saved, screen: 'dash' };
@@ -640,10 +648,27 @@ export default function LearnWithFun() {
     return defaults;
   });
 
+  useEffect(() => {
+    if (!token || user) return;
+
+    api.get('/api/auth/me')
+      .then(({ data }) => {
+        if (data?.user) setUser(data.user, token);
+      })
+      .catch(() => {
+        localStorage.removeItem('wpod_token');
+      });
+  }, [setUser, token, user]);
+
   // const { show: toast, ToastContainer } = useToast();
 
   // Fetch questions from API based on role
   useEffect(() => {
+    if (shouldStartFresh) {
+      setLoading(false);
+      return;
+    }
+
     if (!storeRole || !token) {
       setLoading(false);
       return;
@@ -681,7 +706,7 @@ export default function LearnWithFun() {
     };
 
     fetchQuestions();
-  }, [storeRole, token, user?.name]);
+  }, [shouldStartFresh, storeRole, token, user?.name]);
 
   // Get the correct DB object - use API data if available, otherwise fallback to hardcoded DB
   const getDataSource = () => {
@@ -740,6 +765,48 @@ export default function LearnWithFun() {
       
       return { ...s, xp: nextXp, coins: nextCoins, level: nextLevel };
     });
+  };
+
+  const enterRole = (role, signedInUser = user) => {
+    setState(s => ({ ...s, role, screen: 'dash', username: signedInUser?.name || s.username }));
+    save({ role, username: signedInUser?.name || state.username });
+    addRewards(20, 10);
+    if (shouldStartFresh) navigate('/learn', { replace: true });
+  };
+
+  const selectRole = (role) => {
+    if ((!token || !user) && shouldStartFresh) {
+      setPendingRole(role);
+      setAuthModal('login');
+      setAuthError('');
+      return;
+    }
+
+    enterRole(role);
+  };
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError('');
+
+    try {
+      const email = authForm.email.trim().toLowerCase();
+      const endpoint = authModal === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const payload = authModal === 'login'
+        ? { email, password: authForm.password }
+        : { email, name: authForm.name.trim(), password: authForm.password };
+      const { data } = await api.post(endpoint, payload);
+      setUser(data.user, data.token);
+      setAuthModal(null);
+      if (pendingRole) enterRole(pendingRole, data.user);
+      setPendingRole(null);
+      setAuthForm({ email: '', name: '', password: '' });
+    } catch (err) {
+      setAuthError(err.response?.data?.error || 'Something went wrong');
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const markCleared = (k) => {
@@ -811,13 +878,65 @@ export default function LearnWithFun() {
       </div>
 
       {/* Screens */}
-      {state.screen === 'onboard' && <Onboard state={state} setState={setState} addRewards={addRewards} save={save} db={DB} />}
+      {state.screen === 'onboard' && <Onboard state={state} setState={setState} addRewards={addRewards} save={save} onRoleSelect={selectRole} db={DB} />}
       {state.screen === 'dash' && state.role && <Dashboard state={state} setState={setState} db={getDataSource()} />}
       {state.screen === 'flashcards' && state.role && <Flashcards state={state} setState={setState} addRewards={addRewards} markCleared={markCleared} db={getDataSource()} />}
       {state.screen === 'scenarios' && state.role && <Scenarios state={state} setState={setState} addRewards={addRewards} markCleared={markCleared} toast={toast} db={getDataSource()} />}
       {state.screen === 'quizzes' && state.role && <Quizzes state={state} setState={setState} addRewards={addRewards} markCleared={markCleared} toast={toast} db={getDataSource()} />}
 
       <footer style={styles.footer}>CAREERQUEST v2.0 · MICRO-LEARNING ENGINE · © 2026</footer>
+      {authModal && (
+        <div
+          className="overlay"
+          onClick={() => setAuthModal(null)}
+          style={{ zIndex: 10000, background: 'rgba(0,0,0,0.72)' }}
+        >
+          <div className="card" style={{ width: '100%', maxWidth: 420, padding: 36, animation: 'fadeSlideUp 0.3s both' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: '1.45rem', fontWeight: 800, marginBottom: 8 }}>
+              {authModal === 'login' ? 'Sign in to continue' : 'Create your account'}
+            </h2>
+            <p style={{ color: '#94a3b8', marginBottom: 24, fontSize: '0.9rem', lineHeight: 1.6 }}>
+              Save your Learn with Fun progress, coins, XP, and completed modules.
+            </p>
+
+            <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {authModal === 'register' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: 6, color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600 }}>Full Name</label>
+                  <input className="input" placeholder="Alex Johnson"
+                    value={authForm.name} onChange={e => setAuthForm(f => ({ ...f, name: e.target.value }))} required />
+                </div>
+              )}
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600 }}>Email</label>
+                <input className="input" type="email" placeholder="you@company.com"
+                  value={authForm.email} onChange={e => setAuthForm(f => ({ ...f, email: e.target.value }))} required />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600 }}>Password</label>
+                <input className="input" type="password" placeholder="••••••••"
+                  value={authForm.password} onChange={e => setAuthForm(f => ({ ...f, password: e.target.value }))} required />
+              </div>
+
+              {authError && <p style={{ color: '#f43f5e', fontSize: '0.82rem' }}>{authError}</p>}
+
+              <button className="btn btn-accent" type="submit" disabled={authLoading} style={{ marginTop: 8 }}>
+                {authLoading ? <span className="spinner" /> : authModal === 'login' ? 'Sign In' : 'Create Account'}
+              </button>
+            </form>
+
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '22px 0' }} />
+            <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.86rem' }}>
+              {authModal === 'login' ? "Don't have an account? " : 'Already have an account? '}
+              <button onClick={() => { setAuthError(''); setAuthModal(authModal === 'login' ? 'register' : 'login'); }}
+                style={{ color: '#a78bfa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>
+                {authModal === 'login' ? 'Create account' : 'Sign in'}
+              </button>
+            </p>
+          </div>
+        </div>
+      )}
+
       <ToastContainer />
     </div>
   );

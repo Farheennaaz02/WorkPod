@@ -88,6 +88,12 @@ const HOW_IT_WORKS = [
   { n: '04', title: 'Get your performance report', desc: 'Gemini grades your communication, task handling, and pressure response.' },
 ];
 
+const LEARN_FEATURES = [
+  { title: 'Flashcards', desc: 'Flip through role-based concepts before the simulation starts.' },
+  { title: 'Decision drills', desc: 'Handle workplace cases and learn from instant feedback.' },
+  { title: 'Quick quizzes', desc: 'Test your knowledge and earn XP, coins, and badges.' },
+];
+
 const TESTIMONIALS = [
   {
     quote: 'Used WorkPod before my SDE internship interview. The emergency scenario prep was invaluable — I handled the on-call incident in my actual interview without breaking a sweat.',
@@ -112,6 +118,7 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(false);
 
   const handleGuest = () => navigate('/select');
+  const handleLearn = () => navigate('/learn?reset=1');
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -205,6 +212,14 @@ export default function LandingPage() {
               style={{ minWidth: 180 }}
             >
               See how it works
+            </button>
+            <button
+              className="btn btn-accent btn-lg"
+              id="landing-learn-btn"
+              onClick={handleLearn}
+              style={{ minWidth: 180 }}
+            >
+              Learn with Fun
             </button>
           </div>
 
@@ -326,6 +341,122 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── LEARN WITH FUN SECTION ──────────────────────────── */}
+      <section style={{
+        background: 'var(--bg-primary)',
+        borderTop: '1px solid var(--border)',
+        padding: '0 48px 80px',
+      }}>
+        <div style={{
+          maxWidth: 1100,
+          margin: '0 auto',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-sm)',
+        }}>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+          }}>
+            <div style={{
+              flex: '1 1 300px',
+              padding: 36,
+              borderRight: '1px solid var(--border)',
+              background: 'linear-gradient(135deg, rgba(10,102,194,0.16), rgba(46,204,138,0.08))',
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                color: 'var(--success)',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                marginBottom: 14,
+              }}>
+                <BrainIcon />
+                Learning Mode
+              </div>
+              <h2 className="font-display" style={{
+                fontSize: 'clamp(1.45rem, 2.5vw, 2rem)',
+                lineHeight: 1.15,
+                fontWeight: 800,
+                letterSpacing: '-0.03em',
+                color: 'var(--text-primary)',
+                marginBottom: 14,
+              }}>
+                Learn with Fun is built into WorkPod too.
+              </h2>
+              <p style={{
+                color: 'var(--text-secondary)',
+                fontSize: '0.95rem',
+                lineHeight: 1.7,
+                marginBottom: 24,
+              }}>
+                Build confidence with short practice loops before jumping into the workplace simulation.
+              </p>
+              <button className="btn btn-accent" id="landing-learn-card-btn" onClick={handleLearn}>
+                Open Learning Mode
+                <ChevronRight />
+              </button>
+            </div>
+
+            <div style={{
+              flex: '1.1 1 420px',
+              padding: 28,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 14,
+              alignContent: 'center',
+            }}>
+              {LEARN_FEATURES.map((item, i) => (
+                <div key={item.title} style={{
+                  flex: '1 1 150px',
+                  minHeight: 156,
+                  padding: 18,
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  background: i === 1 ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}>
+                  <div style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 8,
+                    background: i === 0 ? 'var(--accent-muted)' : i === 1 ? 'rgba(240,165,0,0.12)' : 'rgba(46,204,138,0.12)',
+                    color: i === 0 ? 'var(--accent)' : i === 1 ? 'var(--warning)' : 'var(--success)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <CheckCircleIcon />
+                  </div>
+                  <h3 className="font-display" style={{
+                    color: 'var(--text-primary)',
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                  }}>
+                    {item.title}
+                  </h3>
+                  <p style={{
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.78rem',
+                    lineHeight: 1.6,
+                  }}>
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
